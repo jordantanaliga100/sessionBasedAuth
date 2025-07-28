@@ -5,6 +5,20 @@ import { ErrorClass } from "../../class/ErrorClass.js";
 import { AuthResponseDTO, LoginDTO, RegisterDTO } from "./auth.dto.js";
 import { AuthService } from "./auth.service.js";
 
+export const CURRENT_USER = async (
+  req: Request<{}, any, {}, {}>,
+  res: Response<AuthResponseDTO>
+) => {
+  try {
+    res.status(201).json({
+      success: true,
+      message: "Current User",
+    });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
 export const REGISTER_USER = async (
   req: Request<{}, any, RegisterDTO, {}>,
   res: Response<AuthResponseDTO>

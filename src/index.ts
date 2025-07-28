@@ -1,5 +1,5 @@
 import app from "./app.js";
-import { connectMysql } from "./db/mysql.js";
+import { connectMysql } from "./db/mysql/mysql.js";
 
 // SERVER INSTANCE
 const port = process.env.PORT || 5000;
