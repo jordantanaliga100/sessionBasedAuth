@@ -26,21 +26,20 @@ export const REGISTER_USER = async (
   const {
     body: { username, email, password },
   } = req;
-  console.log(req.body);
 
   try {
     if (!email || !password || !username) {
       throw new ErrorClass.BadRequest("All fields are required ! 💁");
     }
-    // wag mona tayo rito
     const user = await AuthService.register(req.body);
 
-    console.log("LIST OF USERS 👧", AuthService.getUser());
+    console.log("NEWLY REGISTERED USER 👧", user);
 
     res.status(201).json({
       success: true,
       message: "User registered successfully",
       data: {
+        id: user.id,
         username: user.username,
         email: user.email,
       },
@@ -66,8 +65,7 @@ export const LOGIN_USER = async (
 
     // wag mona tayo rito
     const user = await AuthService.login(req.body);
-    console.log("LIST OF USERS 👧", AuthService.getUser());
-
+    console.log("NEWLY LOGGED IN USER 👧", user);
     res.status(200).json({
       success: true,
       message: "User logged in successfully",
