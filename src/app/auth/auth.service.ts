@@ -1,3 +1,4 @@
+import { ResultSetHeader } from "mysql2";
 import { v4 as uuidv4 } from "uuid";
 import { ErrorClass } from "../../class/ErrorClass.js";
 import { getPool } from "../../db/mysql/mysql.js";
@@ -11,12 +12,32 @@ class Auth {
     password: string;
   }> = [];
 
-  public getUser() {
-    return {
-      count: this.users.length, // number of users
-      users: this.users, // optional: full list
-    };
+  public async currentUser(session_token: any) {
+    const pool = getPool()!;
+
+    // Check session
+    const [sessionRows] = await pool.query(
+      `SELECT * FROM sessions WHERE session_token = ?`,
+      [session_token]
+    );
+
+    const session = (sessionRows as any)[0];
+    if (!session || new Date(session.expires_at) < new Date()) {
+      throw new ErrorClass.Unauthorized("Session expired or invalid.");
+    }
+
+    // Get user
+    const [userRows] = await pool.query(
+      `SELECT id, email, username FROM users WHERE id = ?`,
+      [session.user_id]
+    );
+
+    const user = (userRows as any)[0];
+    if (!user) throw new ErrorClass.NotFound("User not found.");
+
+    return user;
   }
+
   // public async register(userData: RegisterDTO) {
   //   const existingUser = this.users.find((u) => u.email === userData.email);
   //   if (existingUser) {
@@ -54,7 +75,7 @@ class Auth {
       throw new ErrorClass.BadRequest("User already exists.");
     }
     // hashed then
-    const hashedPassword = await hashPassword(userData.password);
+    const hashedPassword = await hashPassword(userData.password!);
     // create user
     const userId = uuidv4();
     const [result] = await pool.query(
@@ -113,7 +134,7 @@ class Auth {
 
     // 2. Compare password (STOP if invalid)
     const isPasswordValid = await comparePassword(
-      userData.password,
+      userData.password!,
       user.password
     );
 
@@ -123,7 +144,7 @@ class Auth {
 
     // 3. Create session only if password is valid
     const sessionToken = uuidv4();
-    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24); // 1 day
+    const expiresAt = new Date(Date.now() + 1000 * 10); // 10 seconds
 
     // OPTIONAL: delete old sessions (kung single session policy)
     // await pool.query(`DELETE FROM sessions WHERE user_id = ?`, [user.id]);
@@ -143,7 +164,15 @@ class Auth {
     return { ...user, sessionToken };
   }
 
-  public async logout(tokenOrSessionId: string) {
+  public async logout(session_token: string) {
+    const pool = getPool()!;
+    const [result] = await pool.query<ResultSetHeader>(
+      "DELETE FROM sessions WHERE session_token = ?",
+      [session_token]
+    );
+    if (result.affectedRows === 0) {
+      throw new ErrorClass.NotFound("Session not found or already logged out.");
+    }
     return { message: "User logged out successfully" };
   }
 
