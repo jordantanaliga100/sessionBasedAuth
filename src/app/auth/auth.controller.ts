@@ -57,15 +57,23 @@ export const LOGIN_USER = async (
   const {
     body: { email, password },
   } = req;
-
+  const userAgent = req.headers["user-agent"] || "unknown";
+  const userIP =
+    req.headers["x-forwarded-for"]?.toString().split(",")[0] || req.ip;
   try {
     if (!email || !password) {
       throw new ErrorClass.BadRequest("Must have email and password");
     }
 
     // wag mona tayo rito
-    const user = await AuthService.login(req.body);
+    const user = await AuthService.login(req.body, userAgent, userIP);
     console.log("NEWLY LOGGED IN USER 👧", user);
+    res.cookie("session_token", user.sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 1000 * 60 * 60 * 24,
+    });
     res.status(200).json({
       success: true,
       message: "User logged in successfully",
