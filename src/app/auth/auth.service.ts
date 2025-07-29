@@ -90,8 +90,11 @@ class Auth {
 
   //   return { id: user.id, username: user.username, email: user.email };
   // }
-
-  public async login(userData: LoginDTO) {
+  public async login(
+    userData: LoginDTO,
+    userAgent: string,
+    userIP: string | undefined
+  ) {
     const pool = getPool()!;
 
     // 1. Find user by email
@@ -108,19 +111,36 @@ class Auth {
       );
     }
 
-    // 2. Compare password
+    // 2. Compare password (STOP if invalid)
     const isPasswordValid = await comparePassword(
       userData.password,
       user.password
     );
+
     if (!isPasswordValid) {
       throw new ErrorClass.BadRequest("Invalid email or password.");
     }
 
-    // 3. Remove password before returning
+    // 3. Create session only if password is valid
+    const sessionToken = uuidv4();
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24); // 1 day
+
+    // OPTIONAL: delete old sessions (kung single session policy)
+    // await pool.query(`DELETE FROM sessions WHERE user_id = ?`, [user.id]);
+
+    await pool.query(
+      `
+    INSERT INTO sessions (id, user_id, session_token, user_agent, ip_address, expires_at)
+    VALUES (?, ?, ?, ?, ?, ?)
+    `,
+      [uuidv4(), user.id, sessionToken, userAgent, userIP, expiresAt]
+    );
+
+    // 4. Remove password before returning
     delete user.password;
 
-    return user; // may id, username, email, created_at, updated_at
+    // 5. Return user + session token (para sa controller)
+    return { ...user, sessionToken };
   }
 
   public async logout(tokenOrSessionId: string) {

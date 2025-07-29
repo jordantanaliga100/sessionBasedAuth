@@ -6,5 +6,7 @@ export type ResponseDTO<T> = {
   status?: number;
   message?: string;
   count?: number;
-  data?: Omit<T, "password" | "deletedAt">;
+  data?: Omit<T, "password" | "deletedAt"> & {
+    cookie?: string;
+  };
 };
