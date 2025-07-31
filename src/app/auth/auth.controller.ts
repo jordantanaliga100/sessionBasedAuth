@@ -2,40 +2,26 @@
 
 import { Request, Response } from "express";
 import { ErrorClass } from "../../class/ErrorClass.js";
-import { AuthDTO, AuthResponseDTO, LoginDTO, RegisterDTO } from "./auth.dto.js";
+import { AuthResponseDTO, LoginDTO, RegisterDTO } from "./auth.dto.js";
 import { AuthService } from "./auth.service.js";
 
 export const CURRENT_USER = async (
-  req: Request<{}, any, {}, {}>,
+  req: Request<{}, any, { user: any }, {}>,
   res: Response<AuthResponseDTO>
 ) => {
-  // get session_token from headers
-  const cookies = req.headers.cookie;
-  console.log("RAW COOKIE HEADER:", cookies);
-
   try {
-    if (!cookies) {
-      throw new ErrorClass.NotFound("No cookies found in request.");
-    }
+    // Naka-attach na ang session/user info sa req.body.user via AuthGuards
+    const user = req.user;
+    const session = req.session;
 
-    const token = cookies
-      .split(";")
-      .find((c) => c.trim().startsWith("session_token"))
-      ?.split("=")[1];
-
-    if (!token) {
-      throw new ErrorClass.Unauthorized("Session expired or invalid.");
-    }
-    // Service call (business logic)
-    const user: AuthDTO = await AuthService.currentUser(token);
+    console.log("FROM AUTH GUARDS user 👮‍♂️", user);
+    console.log("FROM AUTH GUARDS session 🌄", session);
 
     res.status(201).json({
       success: true,
       message: "Current User",
       data: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
+        user,
       },
     });
   } catch (error: any) {

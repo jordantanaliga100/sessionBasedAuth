@@ -12,32 +12,6 @@ class Auth {
     password: string;
   }> = [];
 
-  public async currentUser(session_token: any) {
-    const pool = getPool()!;
-
-    // Check session
-    const [sessionRows] = await pool.query(
-      `SELECT * FROM sessions WHERE session_token = ?`,
-      [session_token]
-    );
-
-    const session = (sessionRows as any)[0];
-    if (!session || new Date(session.expires_at) < new Date()) {
-      throw new ErrorClass.Unauthorized("Session expired or invalid.");
-    }
-
-    // Get user
-    const [userRows] = await pool.query(
-      `SELECT id, email, username FROM users WHERE id = ?`,
-      [session.user_id]
-    );
-
-    const user = (userRows as any)[0];
-    if (!user) throw new ErrorClass.NotFound("User not found.");
-
-    return user;
-  }
-
   // public async register(userData: RegisterDTO) {
   //   const existingUser = this.users.find((u) => u.email === userData.email);
   //   if (existingUser) {
@@ -147,7 +121,7 @@ class Auth {
     const expiresAt = new Date(Date.now() + 1000 * 10); // 10 seconds
 
     // OPTIONAL: delete old sessions (kung single session policy)
-    // await pool.query(`DELETE FROM sessions WHERE user_id = ?`, [user.id]);
+    await pool.query(`DELETE FROM sessions WHERE user_id = ?`, [user.id]);
 
     await pool.query(
       `

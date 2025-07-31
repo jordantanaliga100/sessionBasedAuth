@@ -13,7 +13,10 @@ export type RegisterDTO = CreateDTO<
   Pick<AuthDTO, "username" | "email" | "password">
 >;
 export type LoginDTO = CreateDTO<Pick<AuthDTO, "email" | "password">>;
-export type AuthResponseDTO = ResponseDTO<AuthDTO, { cookie?: string }>;
+export type AuthResponseDTO = ResponseDTO<
+  AuthDTO,
+  { cookie?: string; user?: any; session?: any }
+>;
 // export type CurrentUserResponseDTO = ResponseDTO<{ cookie?: string }>;
 
 // // src/modules/auth/auth.dto.ts
