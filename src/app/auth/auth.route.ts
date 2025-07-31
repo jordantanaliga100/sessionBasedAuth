@@ -1,4 +1,5 @@
 import express from "express";
+import AuthGuards from "../../middlewares/AuthMiddleware.js";
 import {
   CURRENT_USER,
   LOGIN_USER,
@@ -8,7 +9,7 @@ import {
 const router = express.Router();
 
 // MODE ONE
-router.get("/me", CURRENT_USER);
+router.get("/me", AuthGuards, CURRENT_USER);
 router.post("/sign-up", REGISTER_USER);
 router.post("/sign-in", LOGIN_USER);
 router.get("/logout", LOGOUT_USER);
