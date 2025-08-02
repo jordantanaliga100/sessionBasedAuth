@@ -8,6 +8,12 @@ export default async function AuthGuards(
   next: NextFunction
 ) {
   try {
+    const user = req.user;
+    const sess = req.session;
+
+    console.log("FROM AUTH GUARDS user 👮‍♂️", user);
+    console.log("FROM AUTH GUARDS session 🌄", sess);
+
     const pool = getPool()!;
     const cookies = req.headers.cookie;
 

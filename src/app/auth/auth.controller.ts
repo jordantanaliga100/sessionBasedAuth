@@ -14,8 +14,8 @@ export const CURRENT_USER = async (
     const user = req.user;
     const session = req.session;
 
-    console.log("FROM AUTH GUARDS user 👮‍♂️", user);
-    console.log("FROM AUTH GUARDS session 🌄", session);
+    // console.log("FROM AUTH GUARDS user 👮‍♂️", user);
+    // console.log("FROM AUTH GUARDS session 🌄", session);
 
     res.status(201).json({
       success: true,
@@ -79,7 +79,7 @@ export const LOGIN_USER = async (
     const user = await AuthService.login(req.body, userAgent, userIP);
     console.log("NEWLY LOGGED IN USER 👧", user);
     res.cookie("session_token", user.sessionToken, {
-      httpOnly: true,
+      httpOnly: false,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: Date.now() + 1000 * 10, // 10 seconds
@@ -125,7 +125,7 @@ export const LOGOUT_USER = async (
 
     // // clear the cookie
     res.clearCookie("session_token", {
-      httpOnly: true,
+      httpOnly: false,
       sameSite: "strict",
       secure: process.env.NODE_ENV === "production",
     });
