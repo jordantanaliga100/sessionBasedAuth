@@ -82,7 +82,7 @@ export const LOGIN_USER = async (
       httpOnly: false,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: Date.now() + 1000 * 10, // 10 seconds
+      maxAge: 10 * 1000, // 10 hour instead of 1 hour
     });
     res.status(200).json({
       success: true,
@@ -106,7 +106,7 @@ export const LOGOUT_USER = async (
   try {
     // kunin ang session token sa cookies
     const cookies = req.headers.cookie;
-    console.log("RAW COOKIE HEADER:", cookies);
+    // console.log("RAW COOKIE HEADER:", cookies);
 
     if (!cookies) {
       throw new ErrorClass.NotFound("No cookies found in request.");

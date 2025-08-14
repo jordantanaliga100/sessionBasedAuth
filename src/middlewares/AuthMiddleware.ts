@@ -17,7 +17,7 @@ export default async function AuthGuards(
     const pool = getPool()!;
     const cookies = req.headers.cookie;
 
-    console.log("RAW COOKIE HEADER:", cookies);
+    // console.log("RAW COOKIE HEADER:", cookies);
 
     if (!cookies) {
       throw new ErrorClass.NotFound("No cookies found in request.");
@@ -53,7 +53,12 @@ export default async function AuthGuards(
     if (new Date(session.expires_at) < new Date()) {
       // Optional: remove expired session from DB
       await pool.query(`DELETE FROM sessions WHERE session_token = ?`, [token]);
-      throw new ErrorClass.Unauthorized("Session expired, Please login");
+      res.clearCookie("session_token", {
+        httpOnly: false,
+        sameSite: "strict",
+        secure: process.env.NODE_ENV === "production",
+      });
+      return res.redirect("/login");
     }
 
     // ✅ Rolling expiration: extend session
@@ -75,6 +80,12 @@ export default async function AuthGuards(
     // Attach user + session sa request object
     req.user = (users as any[])[0]; // user object lang
     req.session = session; // full session details
+    res.cookie("session_token", token, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 10 * 1000, // 10 secs instead of 1 hour
+    });
 
     next();
   } catch (error) {
