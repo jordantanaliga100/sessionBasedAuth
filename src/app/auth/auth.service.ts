@@ -12,28 +12,6 @@ class Auth {
     password: string;
   }> = [];
 
-  // public async register(userData: RegisterDTO) {
-  //   const existingUser = this.users.find((u) => u.email === userData.email);
-  //   if (existingUser) {
-  //     throw new ErrorClass.BadRequest("User already exists.");
-  //   }
-
-  //   const hashedPassword = await hashPassword(userData.password);
-  //   const newUser = {
-  //     id: uuidv4(),
-  //     email: userData.email,
-  //     username: userData.username,
-  //     password: hashedPassword,
-  //   };
-  //   this.users.push(newUser);
-  //   return {
-  //     id: newUser.id,
-  //     email: newUser.email,
-  //     username: newUser.username,
-  //     created_at: new Date(),
-  //   };
-  // }
-
   public async register(userData: RegisterDTO) {
     // console.log("🙋 User from Userdata", userData);
 
@@ -48,17 +26,18 @@ class Auth {
       console.log("User already exists:", existingUser[0]);
       throw new ErrorClass.BadRequest("User already exists.");
     }
-    // hashed then
+    // hashed thenu
     const hashedPassword = await hashPassword(userData.password!);
     // create user
     const userId = uuidv4();
-    const [result] = await pool.query(
+    await pool.query(
       `
       INSERT INTO users (id, username, email, password) 
       VALUES (?, ?, ?, ?)
       `,
       [userId, userData.username, userData.email, hashedPassword]
     );
+
     // fetch the user
     const [userRows] = await pool.query(`SELECT * FROM users WHERE id = ?`, [
       userId,
@@ -70,21 +49,6 @@ class Auth {
     return user;
   }
 
-  // public async login(userData: LoginDTO) {
-  //   const user = this.users.find((u) => u.email === userData.email);
-  //   if (!user) {
-  //     throw new ErrorClass.BadRequest(
-  //       `💁 No user found with email: ${userData.email}`
-  //     );
-  //   }
-
-  //   const isMatch = await comparePassword(userData.password, user.password);
-  //   if (!isMatch) {
-  //     throw new ErrorClass.BadRequest("Password Incorrect");
-  //   }
-
-  //   return { id: user.id, username: user.username, email: user.email };
-  // }
   public async login(
     userData: LoginDTO,
     userAgent: string,

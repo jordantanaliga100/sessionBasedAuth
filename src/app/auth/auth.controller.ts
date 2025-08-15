@@ -2,6 +2,7 @@
 
 import { Request, Response } from "express";
 import { ErrorClass } from "../../class/ErrorClass.js";
+import { setCookie } from "../../utils/setCookie.js";
 import { AuthResponseDTO, LoginDTO, RegisterDTO } from "./auth.dto.js";
 import { AuthService } from "./auth.service.js";
 
@@ -33,26 +34,24 @@ export const REGISTER_USER = async (
   req: Request<{}, any, RegisterDTO, {}>,
   res: Response<AuthResponseDTO>
 ): Promise<void> => {
-  const {
-    body: { username, email, password },
-  } = req;
-
   try {
+    const {
+      body: { username, email, password },
+    } = req;
     if (!email || !password || !username) {
       throw new ErrorClass.BadRequest("All fields are required ! 💁");
     }
     const user = await AuthService.register(req.body);
+
+    // serialize here...
+    const { password: pass, ...safefuser } = user as any;
 
     console.log("NEWLY REGISTERED USER 👧", user);
 
     res.status(201).json({
       success: true,
       message: "User registered successfully",
-      data: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-      },
+      data: safefuser,
     });
   } catch (error: any) {
     res.status(400).json({ success: false, message: error.message });
@@ -78,12 +77,9 @@ export const LOGIN_USER = async (
     // wag mona tayo rito
     const user = await AuthService.login(req.body, userAgent, userIP);
     console.log("NEWLY LOGGED IN USER 👧", user);
-    res.cookie("session_token", user.sessionToken, {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 10 * 1000, // 10 hour instead of 1 hour
-    });
+
+    setCookie(res, user.sessionToken);
+
     res.status(200).json({
       success: true,
       message: "User logged in successfully",
