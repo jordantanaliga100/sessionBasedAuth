@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import ejs from "ejs";
 import express, { Request, Response } from "express";
+import session from "express-session";
 import morgan from "morgan";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -31,6 +32,7 @@ const app = express();
 app.engine("ejs", (ejs as any).__express);
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));
+
 app.use(
   cors({
     origin: "*",
@@ -43,6 +45,21 @@ app.use(morgan("tiny"));
 app.use(express.json());
 app.use(express.static("./public"));
 app.use(express.urlencoded({ extended: true }));
+app.use(
+  session({
+    name: "session_id",
+    secret: process.env.SESSION_SECRET || "secret",
+    resave: false,
+    saveUninitialized: false,
+    rolling: true,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 2000 * 60,
+    },
+  })
+);
 
 // VIEWS
 // FRONTEND ROUTES
@@ -64,7 +81,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use("/api/v1/auth", AuthRoutes);
-app.use("/api/v1/products");
+app.use("/api/v1/products", () => {});
 app.use("/api/v1/services", () => {});
 app.use("/api/v1/contact", () => {});
 app.use("/api/v1/users", () => {});
