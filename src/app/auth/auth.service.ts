@@ -87,21 +87,6 @@ class Auth {
       throw new ErrorClass.BadRequest("Invalid email or password.");
     }
 
-    // 3. Create session only if password is valid
-    // const sessionToken = uuidv4();
-    // const expiresAt = new Date(Date.now() + 1000 * 10); // 10 seconds
-
-    // // OPTIONAL: delete old sessions (kung single session policy)
-    // await pool.query(`DELETE FROM sessions WHERE user_id = ?`, [user.id]);
-
-    // await pool.query(
-    //   `
-    // INSERT INTO sessions (id, user_id, session_token, user_agent, ip_address, expires_at)
-    // VALUES (?, ?, ?, ?, ?, ?)
-    // `,
-    //   [uuidv4(), user.id, sessionToken, userAgent, userIP, expiresAt]
-    // );
-
     // 4. Remove password before returning
     delete user.password;
 
