@@ -1,4 +1,5 @@
 // IMPORTS
+import { RedisStore } from "connect-redis";
 import cors from "cors";
 import dotenv from "dotenv";
 import ejs from "ejs";
@@ -11,6 +12,7 @@ import AuthRoutes from "./app/auth/auth.route.js";
 import AuthGuards from "./middlewares/AuthGuards.js";
 import GlobalException from "./middlewares/GlobalException.js";
 import NotFound from "./middlewares/NotFound.js";
+import { redisClient } from "./utils/redis.js";
 dotenv.config();
 
 // DIR CONFIG
@@ -48,6 +50,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   session({
     name: "session_id",
+    store: new RedisStore({ client: redisClient }),
     secret: process.env.SESSION_SECRET || "secret",
     resave: false,
     saveUninitialized: false,

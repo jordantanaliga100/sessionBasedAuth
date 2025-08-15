@@ -68,7 +68,6 @@ export const LOGIN_USER = async (
       throw new ErrorClass.BadRequest("Must have email and password");
     }
 
-    // wag mona tayo rito
     const user = await AuthService.login(req.body, userAgent, userIP);
     console.log("NEWLY LOGGED IN USER 👧", user);
 
