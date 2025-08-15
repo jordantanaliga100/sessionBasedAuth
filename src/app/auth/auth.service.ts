@@ -38,6 +38,13 @@ class Auth {
       [userId, userData.username, userData.email, hashedPassword]
     );
 
+    await pool.query(
+      ` INSERT INTO accounts (id, user_id, provider, provider_account_id)
+        VALUES (?, ?, ?, ?)
+      `,
+      [uuidv4(), userId, "local", userId]
+    );
+
     // fetch the user
     const [userRows] = await pool.query(`SELECT * FROM users WHERE id = ?`, [
       userId,
