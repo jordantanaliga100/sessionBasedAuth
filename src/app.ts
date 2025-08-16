@@ -50,7 +50,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   session({
     name: "session_id",
-    store: new RedisStore({ client: redisClient }),
+    store: new RedisStore({ client: redisClient, ttl: 2000 * 60 }),
     secret: process.env.SESSION_SECRET || "secret",
     resave: false,
     saveUninitialized: false,
