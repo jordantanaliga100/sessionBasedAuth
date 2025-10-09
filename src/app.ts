@@ -6,7 +6,6 @@ import express, { Request, Response } from "express";
 import morgan from "morgan";
 import path from "path";
 import { fileURLToPath } from "url";
-import AuthRoutes from "./app/auth/auth.route.js";
 import AuthGuards from "./middlewares/AuthGuards.js";
 import GlobalException from "./middlewares/GlobalException.js";
 import NotFound from "./middlewares/NotFound.js";
@@ -80,7 +79,7 @@ app.get("/", (req: Request, res: Response) => {
   res.send(`<pre>🛩️ Server Alive 🛩️</pre>`);
 });
 
-app.use("/api/v1/auth", AuthRoutes);
+app.use("/api/v1/auth", () => {});
 app.use("/api/v1/products", () => {});
 app.use("/api/v1/services", () => {});
 app.use("/api/v1/contact", () => {});
