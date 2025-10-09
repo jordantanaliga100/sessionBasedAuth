@@ -1,10 +1,8 @@
 // IMPORTS
-import { RedisStore } from "connect-redis";
 import cors from "cors";
 import dotenv from "dotenv";
 import ejs from "ejs";
 import express, { Request, Response } from "express";
-import session from "express-session";
 import morgan from "morgan";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -12,7 +10,6 @@ import AuthRoutes from "./app/auth/auth.route.js";
 import AuthGuards from "./middlewares/AuthGuards.js";
 import GlobalException from "./middlewares/GlobalException.js";
 import NotFound from "./middlewares/NotFound.js";
-import { redisClient } from "./utils/redis.js";
 dotenv.config();
 
 // DIR CONFIG
@@ -47,22 +44,22 @@ app.use(morgan("tiny"));
 app.use(express.json());
 app.use(express.static("./public"));
 app.use(express.urlencoded({ extended: true }));
-app.use(
-  session({
-    name: "session_id",
-    store: new RedisStore({ client: redisClient, ttl: 2000 * 60 }),
-    secret: process.env.SESSION_SECRET || "secret",
-    resave: false,
-    saveUninitialized: false,
-    rolling: true,
-    cookie: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 2000 * 60,
-    },
-  })
-);
+// app.use(
+//   session({
+//     name: "session_id",
+//     store: new RedisStore({ client: redisClient, ttl: 2000 * 60 }),
+//     secret: process.env.SESSION_SECRET || "secret",
+//     resave: false,
+//     saveUninitialized: false,
+//     rolling: true,
+//     cookie: {
+//       httpOnly: true,
+//       secure: process.env.NODE_ENV === "production",
+//       sameSite: "strict",
+//       maxAge: 2000 * 60,
+//     },
+//   })
+// );
 
 // VIEWS
 // FRONTEND ROUTES
