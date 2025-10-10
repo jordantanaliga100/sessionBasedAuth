@@ -1,4 +1,3 @@
-import { ResultSetHeader } from "mysql2";
 import { v4 as uuidv4 } from "uuid";
 import { ErrorClass } from "../../class/ErrorClass.js";
 import { getPool } from "../../db/mysql/mysql.js";
@@ -115,17 +114,18 @@ class Auth {
     return { ...user };
   }
 
-  public async logout(session_token: string) {
-    const pool = getPool()!;
-    const [result] = await pool.query<ResultSetHeader>(
-      "DELETE FROM sessions WHERE session_token = ?",
-      [session_token]
-    );
-    if (result.affectedRows === 0) {
-      throw new ErrorClass.NotFound("Session not found or already logged out.");
-    }
-    return { message: "User logged out successfully" };
-  }
+  // ⚠️⚠️⚠️  HANDLED BY THE CONTROLLER ALREADY ⚠️⚠️⚠️
+  // public async logout(session_token: string) {
+  //   const pool = getPool()!;
+  //   const [result] = await pool.query<ResultSetHeader>(
+  //     "DELETE FROM sessions WHERE session_token = ?",
+  //     [session_token]
+  //   );
+  //   if (result.affectedRows === 0) {
+  //     throw new ErrorClass.NotFound("Session not found or already logged out.");
+  //   }
+  //   return { message: "User logged out successfully" };
+  // }
 
   public async forgotPassword(email: string) {
     return { message: "Password reset link sent" };
