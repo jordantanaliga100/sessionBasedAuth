@@ -93,23 +93,23 @@ class Auth {
     delete user.password;
 
     // 5. Create session
-    const sessionId = uuidv4();
-    const sessionToken = uuidv4(); // pwede rin mas secure generator
-    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24); // 1 day expiry
+    // const sessionId = uuidv4();
+    // const sessionToken = uuidv4(); // pwede rin mas secure generator
+    // const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24); // 1 day expiry
 
-    await pool.query(
-      `INSERT INTO sessions
-     (id, user_id, session_token, user_agent, ip_address, expires_at)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-      [
-        sessionId,
-        user.id,
-        sessionToken,
-        userAgent,
-        userIP || "unknown",
-        expiresAt,
-      ]
-    );
+    // await pool.query(
+    //   `INSERT INTO sessions
+    //  (id, user_id, session_token, user_agent, ip_address, expires_at)
+    //  VALUES (?, ?, ?, ?, ?, ?)`,
+    //   [
+    //     sessionId,
+    //     user.id,
+    //     sessionToken,
+    //     userAgent,
+    //     userIP || "unknown",
+    //     expiresAt,
+    //   ]
+    // );
 
     // 6. Return user + session token (para sa controller)
     return { ...user };
