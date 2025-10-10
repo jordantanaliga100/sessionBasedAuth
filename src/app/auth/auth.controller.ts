@@ -140,15 +140,26 @@ export const LOGOUT_USER = async (
   res: Response<ApiResponse<null> | ErrorResponse>
 ): Promise<void> => {
   try {
+    if (!req.session) {
+      // no session exists (e.g. already logged out)
+      res.status(200).json({
+        success: true,
+        message: "No active session. User already logged out.",
+        data: null,
+      });
+    }
+
+    // Destroy session
     req.session.destroy((err) => {
       if (err) {
-        console.error("Session destroy error:", err);
+        console.error("❌ Session destroy error:", err);
         return res.status(500).json({
           success: false,
-          message: "Failed to logout",
+          message: "Failed to destroy session",
         });
       }
 
+      // Clear the session cookie
       res.clearCookie("session_id", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -159,21 +170,16 @@ export const LOGOUT_USER = async (
         success: true,
         message: "User logged out successfully",
         data: null,
-      } as ApiResponse<null>);
+      });
     });
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      const err = error as Express.CustomError;
-      res.status(err.statusCode || 400).json({
-        success: false,
-        message: err.message,
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        message: "Unknown error",
-      });
-    }
+  } catch (error) {
+    console.error("🚨 Logout controller error:", error);
+
+    res.status(500).json({
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Unexpected logout error",
+    });
   }
 };
 
