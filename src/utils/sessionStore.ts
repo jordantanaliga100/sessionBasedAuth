@@ -1,7 +1,7 @@
 import mysqlSession from "express-mysql-session";
 import session from "express-session";
 import mysql, { Pool } from "mysql2";
-import { mysqlConfig } from "../helpers/config.js";
+import { mysqlConfig } from "../config/config.js";
 
 const MySQLStore = mysqlSession(session as any);
 export const createSessionStore = () => {

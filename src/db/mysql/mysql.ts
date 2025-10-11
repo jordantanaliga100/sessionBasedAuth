@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import mysql from "mysql2/promise";
-import { mysqlConfig } from "../../helpers/config.js";
+import { mysqlConfig } from "../../config/config.js";
 import { runSeeders } from "./seeders/mysql-seed.js";
 
 dotenv.config();
