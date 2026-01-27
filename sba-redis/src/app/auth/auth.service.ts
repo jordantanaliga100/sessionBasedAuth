@@ -1,11 +1,4 @@
 class Auth {
-    private users: Array<{
-        id: string
-        email: string
-        username?: string
-        password: string
-    }> = []
-
     public async register() {
         return null
     }
@@ -15,7 +8,7 @@ class Auth {
     }
 
     public async forgotPassword() {
-        return { message: 'Password reset link sent' }
+        return null
     }
 }
 export const AuthService = new Auth()

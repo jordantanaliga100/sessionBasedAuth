@@ -10,5 +10,6 @@ export const TopMiddlewares: RequestHandler[] = [
     }),
     express.json(),
     express.urlencoded({ extended: true }),
+
     express.static('./public'),
 ]
