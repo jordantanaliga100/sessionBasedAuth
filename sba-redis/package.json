@@ -1,0 +1,65 @@
+{
+    "name": "net-template",
+    "version": "1.0.0",
+    "description": "",
+    "main": "server.js",
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/server.js",
+        "dev": "tsx watch src/server.ts",
+        "start:dev": "pnpm run dev",
+        "lint": "eslint . --ext .ts,.js",
+        "lint:fix": "eslint . --ext .ts,.js --fix",
+        "format": "prettier . --write",
+        "prepare": "husky",
+        "clean": "rm -rf dist"
+    },
+    "lint-staged": {
+        "*": [
+            "pnpm lint:fix",
+            "pnpm format"
+        ],
+        "*.{json,md}": [
+            "pnpm format"
+        ]
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "packageManager": "pnpm@10.13.1",
+    "dependencies": {
+        "connect-redis": "^9.0.0",
+        "cors": "^2.8.5",
+        "dotenv": "^17.2.3",
+        "express": "^5.1.0",
+        "express-session": "^1.18.2",
+        "jiti": "^2.6.1",
+        "jsonwebtoken": "^9.0.2",
+        "mongodb": "^6.20.0",
+        "morgan": "^1.10.1",
+        "mysql2": "^3.15.2",
+        "pg": "^8.16.3",
+        "redis": "^5.8.3"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.38.0",
+        "@tsconfig/node22": "^22.0.2",
+        "@types/cors": "^2.8.19",
+        "@types/express": "^5.0.3",
+        "@types/express-session": "^1.18.2",
+        "@types/morgan": "^1.9.10",
+        "@types/node": "^24.7.1",
+        "@types/pg": "^8.15.5",
+        "eslint": "^9.38.0",
+        "globals": "^16.4.0",
+        "husky": "^9.1.7",
+        "lint-staged": "^16.2.6",
+        "nodemon": "^3.1.10",
+        "prettier": "^3.6.2",
+        "ts-node": "^10.9.2",
+        "ts-node-dev": "^2.0.0",
+        "tsx": "^4.20.6",
+        "typescript": "^5.9.3",
+        "typescript-eslint": "^8.46.2"
+    }
+}
