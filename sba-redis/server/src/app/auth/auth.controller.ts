@@ -75,7 +75,6 @@ class AuthController {
                     return res.status(500).json({ success: false, message: 'Failed to logout' })
                 }
 
-                // 2. Burahin ang cookie sa browser/client
                 // Dapat match ang pangalan sa 'name' ng session config mo (default: connect.sid)
                 res.clearCookie('connect.sid')
 
