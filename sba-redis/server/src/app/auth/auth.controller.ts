@@ -33,6 +33,7 @@ class AuthController {
                     id: user.id,
                     username: user.username,
                     email: user.email,
+                    role: user.role,
                 }
 
                 // 3. I-save sa Redis bago mag-respond
@@ -45,7 +46,7 @@ class AuthController {
 
                     res.status(200).json({
                         success: true,
-                        message: 'Logged in with new secure session!',
+                        message: `Welcome ${user.role}!`,
                         data: user,
                     })
                 })

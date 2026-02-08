@@ -3,9 +3,10 @@ declare module 'express-session' {
     interface SessionData {
         views?: number
         user?: {
-            id: string
+            id: string | number
             username?: string
             email?: string
+            role?: string
             meta?: {
                 ip?: string
                 userAgent?: string
