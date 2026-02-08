@@ -1,8 +1,9 @@
-name: sba-client-dev
+name: sba-client
 
 services:
   # Ang Gateway
-  nginx-proxy:
+  nginx:
+    container_name: proxy
     image: nginx:alpine
     ports:
       - "80:80"
@@ -13,6 +14,7 @@ services:
 
   # Ang Vite Dev Server
   client:
+    container_name: frontend
     build:
       context: .
       dockerfile: Dockerfile.dev
