@@ -7,8 +7,8 @@ interface Route {
     router: Router
 }
 const ApiRoutes: Route[] = [
-    { path: '/auth', router: AuthRoutes },
-    { path: '/users', router: UsersRoutes },
+    { path: 'auth', router: AuthRoutes },
+    { path: 'users', router: UsersRoutes },
 ]
 
 export default ApiRoutes

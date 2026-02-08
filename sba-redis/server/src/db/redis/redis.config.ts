@@ -22,9 +22,10 @@ export const sessionConfig = session({
     secret: process.env.SESSION_SECRET || 'pogi-secret-key',
     resave: false,
     saveUninitialized: false,
+    rolling: true,
     cookie: {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 1000 * 60 * 60 * 24, // 1 day
+        maxAge: 1000 * 60 * 30, // 30 minutes
     },
 })

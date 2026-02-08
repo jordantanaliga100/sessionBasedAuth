@@ -1,36 +1,90 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express'
+import { AuthService } from './auth.service'
 
 class AuthController {
-    async register(req: Request, res: Response): Promise<void> {
+    private authService = AuthService
+    register = async (req: Request, res: Response): Promise<void> => {
         try {
-            res.status(201).json({ success: true })
-        } catch (error) {
-            /* error */
+            const newUser = await this.authService.register(req.body)
+
+            res.status(201).json({
+                message: 'User created! Please login to continue.',
+                success: true,
+                data: newUser,
+            })
+        } catch (error: any) {
+            res.status(400).json({ success: false, message: error.message })
         }
     }
 
-    async login(req: Request, res: Response): Promise<void> {
+    login = async (req: Request, res: Response): Promise<void> => {
         try {
-            res.status(200).json({ success: true })
-        } catch (error) {
-            /* error */
+            const user = await this.authService.login(req.body)
+            // 1. Tawagin agad ang regenerate para malinis ang lumang session ID
+            req.session.regenerate((err) => {
+                if (err) {
+                    return res.status(500).json({ success: false, message: 'Session regen failed' })
+                }
+
+                // 2. DITO MO LANG ILAGAY ANG USER DATA (Kasi fresh/empty na ang session object dito)
+                req.session.user = {
+                    id: user.id,
+                    username: user.username,
+                    email: user.email,
+                }
+
+                // 3. I-save sa Redis bago mag-respond
+                req.session.save((saveErr) => {
+                    if (saveErr) {
+                        return res
+                            .status(500)
+                            .json({ success: false, message: 'Session save failed' })
+                    }
+
+                    res.status(200).json({
+                        success: true,
+                        message: 'Logged in with new secure session!',
+                        data: user,
+                    })
+                })
+            })
+        } catch (error: any) {
+            res.status(401).json({ success: false, message: error.message })
         }
     }
 
-    async logout(req: Request, res: Response): Promise<void> {
+    me = async (req: Request, res: Response): Promise<void> => {
         try {
-            res.status(200).json({ success: true })
+            res.status(200).json({
+                success: true,
+                user: req.session.user,
+            })
         } catch (error) {
-            /* error */
+            res.status(500).json({ success: false })
         }
     }
 
-    async me(req: Request, res: Response): Promise<void> {
+    logout = async (req: Request, res: Response): Promise<void> => {
         try {
-            res.status(200).json({ success: true })
+            // 1. Burahin ang session sa Redis
+            req.session.destroy((err) => {
+                if (err) {
+                    return res.status(500).json({ success: false, message: 'Failed to logout' })
+                }
+
+                // 2. Burahin ang cookie sa browser/client
+                // Dapat match ang pangalan sa 'name' ng session config mo (default: connect.sid)
+                res.clearCookie('connect.sid')
+
+                res.status(200).json({
+                    success: true,
+                    message: 'Logged out ! See you later.',
+                })
+            })
         } catch (error) {
-            /* error */
+            res.status(500).json({ success: false, message: 'Server error during logout' })
         }
     }
 }
