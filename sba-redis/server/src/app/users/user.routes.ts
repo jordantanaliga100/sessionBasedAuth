@@ -1,6 +1,6 @@
 import express from 'express'
-import AuthGuards from '../../middlewares/AuthGuards'
-import { RoleGuards } from '../../middlewares/RoleGuards'
+import AuthGuards from '../../guards/AuthGuards'
+import { RoleGuards } from '../../guards/RoleGuards'
 import { USERS } from './user.controller'
 
 const router = express.Router()
