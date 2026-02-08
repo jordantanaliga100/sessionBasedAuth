@@ -1,3 +1,4 @@
+name: sba-backend
 services:
     # PROXY
     nginx:

@@ -3,7 +3,7 @@ import { Link, Outlet } from "react-router";
 
 function Auth() {
   return (
-    <main>
+    <main className="scale-75 md:scale-100">
       <header className="pt-10 flex flex-col items-center justify-center w-full">
         <h1 className=" ">
           SBA - <span className="font-normal text-md ">Session Based Auth</span>
@@ -13,7 +13,7 @@ function Auth() {
         </pre>
       </header>
 
-      <section className="pt-10 md:pt-5  ms:scale-50  md:scale-75 m-auto grid grid-cols-12 justify-center md:w-[50dvw] md:h-[60vh]">
+      <section className="pt-10 md:pt-5 md:scale-75 m-auto md:grid grid-cols-12 justify-center sm:w-full md:w-[50dvw] md:h-[60vh]">
         <span className="col-start-1 col-end-1 cursor-pointer">
           <Link to="/">
             <ArrowBigLeftDash />

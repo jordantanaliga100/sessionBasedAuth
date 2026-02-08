@@ -1,8 +1,8 @@
 import { Pool } from 'pg'
 
 export const pool = new Pool({
-    host: process.env.PG_HOST || 'localhost',
-    user: process.env.PG_USER || 'postgres',
+    host: process.env.PG_HOST || 'postgres',
+    user: process.env.PG_USER || 'admin',
     password: process.env.PG_PASSWORD || 'secret',
     port: Number(process.env.PG_PORT) || 5432,
     max: 10, // connection pool limit
