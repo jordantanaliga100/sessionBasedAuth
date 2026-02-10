@@ -29,4 +29,5 @@ ApiRoutes.forEach((route) => {
 
 // BOTTOM MIDDLEWARES
 BottomMiddlewares.forEach((mw) => app.use(mw))
+
 export default app
