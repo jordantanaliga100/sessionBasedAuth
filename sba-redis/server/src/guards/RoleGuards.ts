@@ -9,7 +9,7 @@ export const RoleGuards = (...allowedRoles: string[]) => {
         if (allowedRoles.length > 0 && !allowedRoles.includes(user.role as string)) {
             return res.status(403).json({
                 success: false,
-                message: `Forbidden: Kailangan mo ng role na ${allowedRoles.join(' or ')}`,
+                message: `Forbidden: You need to be ${allowedRoles.join(' or ')} to access this resource.`,
             })
         }
         next()
