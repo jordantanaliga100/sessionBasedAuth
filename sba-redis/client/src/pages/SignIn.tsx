@@ -65,7 +65,7 @@ export default function SignIn() {
         <CardContent className="text-muted-foreground text-sm">
           Dont have an account ?
         </CardContent>
-        <Link to="register">
+        <Link to="r">
           <Button variant="link">Sign Up</Button>
         </Link>
       </CardAction>
