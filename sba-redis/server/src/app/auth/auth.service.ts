@@ -138,6 +138,8 @@ class Auth {
         const resetToken = crypto.randomBytes(32).toString('hex')
         // 3. I-save sa Redis: `reset:token` -> `email` (may expiry)
         await redisClient.set(`reset:${resetToken}`, email, { EX: 900 })
+
+        console.log(`[TESTING] Reset Token for ${email}: ${resetToken}`)
         // 4. Send email: `sendResetPasswordEmail(email, token)`
         await EmailService.sendResetPasswordEmail(email, resetToken)
         return { message: 'If an account exists, a password reset link was sent to your email.' }
