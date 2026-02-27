@@ -16,11 +16,15 @@ export interface LoginData {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
+  isVerifying: boolean;
   error: string | null;
   register: (userData: RegisterData) => Promise<void>;
   login: (userData: LoginData) => Promise<void>;
   logout: () => void;
   checkAuth: () => Promise<void>;
+  requestVerification: () => void;
+  verifyEmail: (otp: string) => void;
+  successMessage: string | null;
 }
 
 export const AuthContext = createContext<AuthContextType>(

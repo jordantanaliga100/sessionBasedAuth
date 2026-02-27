@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
 import {
   Card,
@@ -12,8 +13,13 @@ import {
 } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+import { useAuth } from "../hooks/useAuth";
 
 export default function SignUp() {
+  const [localError, setLocalError] = useState<string | null>(null); // ✨ Local error state
+
+  const { register, isLoading, error: contextError } = useAuth(); // ✨ Gamitin ang Auth Context
+  const navigate = useNavigate(); // ✨ useNavigate hook
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -28,12 +34,16 @@ export default function SignUp() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Registering user...", formData);
-    alert("Check console for form data! Simulation lang muna.");
+    setLocalError(null);
+    try {
+      await register(formData); // ✨ Tawagin ang register function
+      navigate("/dashboard"); // ✨ Redirect to dashboard
+    } catch (err: any) {
+      setLocalError(err.response?.data?.message || "Registration failed");
+    }
   };
-
   return (
     <Card className="w-full ">
       <CardHeader>
@@ -43,11 +53,15 @@ export default function SignUp() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {/* ✨ Added ID to form */}
         <form id="signup-form" onSubmit={handleSubmit}>
+          {/* ✨ Display Errors */}
+          {(localError || contextError) && (
+            <p className="text-red-500 text-sm mb-4">
+              {localError || contextError}
+            </p>
+          )}
           <div className="flex flex-col gap-6">
             <div className="grid gap-2">
-              {/* ✨ Fixed htmlFor */}
               <Label htmlFor="username">Username</Label>
               <Input
                 id="username"
@@ -85,11 +99,15 @@ export default function SignUp() {
           </div>
         </form>
       </CardContent>
-      {/* ✨ Moved Buttons inside Footer for layout consistency */}
       <CardFooter className="flex flex-col gap-2">
-        {/* ✨ Added form attribute to button */}
-        <Button type="submit" form="signup-form" className="w-full">
-          Register
+        {/* ✨ Disable button while loading */}
+        <Button
+          type="submit"
+          form="signup-form"
+          className="w-full"
+          disabled={isLoading}
+        >
+          {isLoading ? "Registering..." : "Register"}
         </Button>
         <Button variant="outline" className="w-full">
           Signup with Google

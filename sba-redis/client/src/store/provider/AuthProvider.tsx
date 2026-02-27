@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import API from "../../api/axios";
 import type { User } from "../../types/User";
 import {
@@ -11,7 +11,9 @@ import {
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // Para sa initial check
+  const [successMessage, setSuccessMessage] = useState<string | null>(null); // ✨ 1. New state for message
+  const [isVerifying, setIsVerifying] = useState<boolean>(false); // ✨ 1. Bago para sa verification
   const [error, setError] = useState<string | null>(null);
 
   // ✨ UPDATED: Login function accepts LoginData
@@ -57,28 +59,78 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const checkAuth = async () => {
-    setIsLoading(true);
+  // const checkAuth = async () => {
+  //   setIsLoading(true);
+  //   try {
+  //     const response = await API.get("/auth/me"); // 💡 Tatanungin ang backend kung may session
+  //     setUser(response.data);
+  //     setError(null);
+  //   } catch (err: any) {
+  //     console.log("No active session");
+  //     setUser(null);
+  //     // Hindi natin kailangan i-set ang error dito para hindi magulat ang user
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+  const requestVerification = async () => {
+    setIsVerifying(true); // ✨ 2. Gamitin ang bagong state
     try {
-      const response = await API.get("/auth/me"); // 💡 Tatanungin ang backend kung may session
-      setUser(response.data);
-      setError(null);
-    } catch (err: any) {
-      console.log("No active session");
-      setUser(null);
-      // Hindi natin kailangan i-set ang error dito para hindi magulat ang user
+      return await API.post("/auth/request-verification");
     } finally {
-      setIsLoading(false);
+      setIsVerifying(false);
     }
   };
 
-  useEffect(() => {
-    checkAuth();
+  const verifyEmail = async (otp: string) => {
+    setIsVerifying(true); // ✨ 3. Gamitin ang bagong state
+    try {
+      const response = await API.post("/auth/verify-email", { otp });
+      // ✨ 2. Set the success message
+      setSuccessMessage("🔐 Account successfully verified!");
+      // UPDATE USER STATE
+      // Optional: Clear the message after a few seconds
+      setTimeout(() => setSuccessMessage(null), 5000);
+      setUser(response.data.data);
+      setIsLoading(false);
+      return response;
+    } finally {
+      setIsLoading(false);
+      setIsVerifying(false);
+    }
+  };
+
+  // ✨ This function should run on refresh
+  const checkAuth = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await API.get("/auth/me"); // Endpoint to get current user
+      setUser(response.data.user);
+    } catch (error) {
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
   return (
     <AuthContext.Provider
-      value={{ error, user, isLoading, login, register, logout, checkAuth }}
+      value={{
+        error,
+        user,
+        isLoading,
+        login,
+        register,
+        logout,
+        checkAuth,
+        requestVerification,
+        verifyEmail,
+        isVerifying,
+        successMessage,
+      }}
     >
       {children}
     </AuthContext.Provider>

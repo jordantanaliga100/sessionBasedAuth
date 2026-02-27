@@ -6,7 +6,7 @@ export function Loaders() {
       {/* Ang 'animate-spin' ang magpapa-ikot, 'text-primary' para sa kulay */}
       <Loader2 className="h-10 w-10 animate-spin text-primary" />
       <p className="text-sm font-medium text-muted-foreground animate-pulse">
-        Loading data...
+        Wait...
       </p>
     </div>
   );
