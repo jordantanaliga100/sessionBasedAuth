@@ -6,8 +6,8 @@ import { AUTH } from './auth.controller'
 const router = express.Router()
 
 // MODE ONE
-router.post('/verify-email', AUTH.verify)
-router.post('/request-verification', AuthGuard, AUTH.requestVerification)
+router.post('/verify-email', AUTH.verifyEmail)
+router.post('/request-verification', AuthGuard, ThrottleGaurd, AUTH.requestVerification)
 router.get('/me', AuthGuard, AUTH.me)
 router.post('/sign-up', GuestGuard, AUTH.register)
 router.post('/sign-in', ThrottleGaurd, GuestGuard, AUTH.login)

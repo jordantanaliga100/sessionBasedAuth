@@ -90,16 +90,19 @@ class AuthController {
         }
     }
 
-    verify = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    verifyEmail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const { email, otp } = req.body
 
             // Tawagin ang service method na ginawa natin sa taas
             const result = await this.authService.verifyEmail(email, otp)
+            if (req.session.user) {
+                req.session.user.is_verified = true // Ito ang mag-u-update sa Redis
+            }
 
             res.status(200).json({
                 success: true,
-                message: 'Account successfully verified! You can now log in.',
+                message: '🔐 Account successfully verified! ',
                 data: result.user,
             })
         } catch (error) {

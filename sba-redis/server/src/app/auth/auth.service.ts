@@ -109,7 +109,7 @@ class Auth {
         }
 
         // 4. Pag match: Update ang user sa Postgres
-        const query = `UPDATE users SET is_verified = true WHERE email = $1 RETURNING id, email;`
+        const query = `UPDATE users SET is_verified = true WHERE email = $1 RETURNING id, email, is_verified;`
         const result = await pool.query(query, [email])
 
         if (result.rowCount === 0) {
@@ -118,6 +118,9 @@ class Auth {
 
         // 5. Burahin na ang OTP sa Redis para hindi na magamit ulit
         await redisClient.del(`otp:${email}`)
+
+        // 6. Sends confimation email
+        await EmailService.sendVerifiedEmail(email)
 
         return {
             user: result.rows[0],
