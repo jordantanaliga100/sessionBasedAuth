@@ -55,4 +55,31 @@ export class EmailService {
             // kung nagka-issue lang sa confirmation email
         }
     }
+
+    static async sendResetPasswordEmail(email: string, token: string) {
+        // 1. Dito natin ilalagay ang URL ng frontend na may kasamang token
+        // Halimbawa: https://yourfrontend.com/reset-password?token=...
+        const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`
+
+        // 2. I-setup ang HTML content ng email
+        const subject = 'Password Reset Request'
+        const html = `
+            <p>You requested a password reset.</p>
+            <p>Click <a href="${resetUrl}">here</a> to reset your password. This link will expire in 15 minutes.</p>
+            <p>If you did not request this, please ignore this email.</p>
+        `
+
+        // 3. Tawagin ang iyong email transporter (halimbawa, nodemailer)
+        // 3. I-send ang email
+        await this.transporter.sendMail({
+            from: `"Dev Jordan" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject,
+            html,
+        })
+        // await transporter.sendMail({ from: ..., to: email, subject, html });
+        console.log(`Sending reset email to ${email} with token: ${token}`) // Temporary log
+
+        return true
+    }
 }

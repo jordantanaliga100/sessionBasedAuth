@@ -1,16 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import crypto from 'crypto'
 import { ErrorClass } from '../../class/Error'
 import { pool } from '../../db/postgres/postgres'
 import { redisClient } from '../../db/redis/redis.config'
 import { EmailService } from '../../services/email.service'
 import { User } from '../../types/user'
-import { comparePassword, hashPassword } from '../../utils/encrypt'
+import { PasswordEncrypt } from '../../utils/encrypt'
 
 class Auth {
     public async register(data: User) {
         const { username, email, password, role } = data
 
-        const hashedPassword = await hashPassword(password)
+        const hashedPassword = await PasswordEncrypt.hash(password)
 
         const values = [username, email, hashedPassword, role || 'user']
 
@@ -50,7 +51,7 @@ class Auth {
 
             console.log('newly created user', user)
 
-            const isMatch = await comparePassword(password, user.password)
+            const isMatch = await PasswordEncrypt.compare(password, user.password)
             if (!isMatch) {
                 throw new ErrorClass.BadRequest('Invalid email or password')
             }
@@ -65,10 +66,6 @@ class Auth {
         } catch (error: any) {
             throw new Error(error.message || 'Login failed')
         }
-    }
-
-    public async forgotPassword() {
-        return null
     }
 
     public async sendVerificationEmail(email: string) {
@@ -125,6 +122,45 @@ class Auth {
         return {
             user: result.rows[0],
         }
+    }
+
+    public async sendPasswordResetEmail(email: string) {
+        // 1. Check kung existing ang email sa DB (at security check na hindi verified user)
+        const userCheck = await pool.query('SELECT id FROM users WHERE email = $1', [email])
+        if (userCheck.rowCount === 0) {
+            // Security Tip: Huwag sabihin na "User not found" para hindi malaman ng hacker kung aling email ang valid.
+            // Sabihin lang na "If an account exists, a link was sent."
+            return {
+                message: 'If an account exists, a password reset link was sent to your email.',
+            }
+        }
+        // 2. Generate a long random token (hindi OTP)
+        const resetToken = crypto.randomBytes(32).toString('hex')
+        // 3. I-save sa Redis: `reset:token` -> `email` (may expiry)
+        await redisClient.set(`reset:${resetToken}`, email, { EX: 900 })
+        // 4. Send email: `sendResetPasswordEmail(email, token)`
+        await EmailService.sendResetPasswordEmail(email, resetToken)
+        return { message: 'If an account exists, a password reset link was sent to your email.' }
+    }
+    public async resetPassword(token: string, newPassword: string) {
+        // 1. I-check sa Redis kung valid at hindi pa expired ang token
+        const email = await redisClient.get(`reset:${token}`)
+
+        if (!email) {
+            throw new ErrorClass.BadRequest('Password reset token is invalid or has expired.')
+        }
+
+        // 2. I-hash ang bagong password
+        const hashedPassword = await PasswordEncrypt.hash(newPassword)
+
+        // 3. I-update ang user sa DB gamit ang email
+        const query = `UPDATE users SET password = $1 WHERE email = $2;`
+        await pool.query(query, [hashedPassword, email])
+
+        // 4. I-delete ang token sa Redis (para one-time use lang)
+        await redisClient.del(`reset:${token}`)
+
+        return { message: 'Password has been reset successfully.' }
     }
 }
 export const AuthService = new Auth()
