@@ -5,10 +5,10 @@ import { useAuth } from "../hooks/useAuth";
 const PublicRoute = () => {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) return <Loaders />;
+  if (isLoading) return <Loaders />; // O kaya spinner
 
-  // Pag may user na, redirect sa home (Dashboard)
-  return !user ? <Outlet /> : <Navigate to="/" replace />;
+  // Kung authenticated na, bawal na pumasok sa login/signup, punta sa home
+  return user ? <Navigate to="/" replace /> : <Outlet />;
 };
 
 export default PublicRoute;

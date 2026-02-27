@@ -5,10 +5,9 @@ import { useAuth } from "../hooks/useAuth";
 const PrivateRoute = () => {
   const { user, isLoading } = useAuth();
 
-  // Habang nagche-check pa sa Redis, wag muna mag-render
-  if (isLoading) return <Loaders />;
+  if (isLoading) return <Loaders />; // O kaya spinner
 
-  // Pag walang user, redirect sa sign-in
+  // Kung hindi authenticated, bawal pumasok, punta sa login
   return user ? <Outlet /> : <Navigate to="/a" replace />;
 };
 

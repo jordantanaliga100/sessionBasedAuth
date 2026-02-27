@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createContext, useEffect, useState } from "react";
-import api from "../api/axios";
-import { type User } from "../types/User";
+import { Role, type User } from "../types/User";
 
 interface AuthContextType {
   user: User | null;
@@ -38,15 +37,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const checkAuth = async () => {
     setIsLoading(true);
     try {
-      const response = await api.get("/auth/me"); // Tawagin ang backend
-      setUser(response.data);
-      // await new Promise((resolve) => setTimeout(resolve, 1000));
-      // setUser({
-      //   id: "123",
-      //   username: "TestUser",
-      //   email: "test@example.com",
-      //   role: Role.User,
-      // });
+      // const response = await api.get("/auth/me"); // Tawagin ang backend
+      // setUser(response.data);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      setUser({
+        id: "123",
+        username: "TestUser",
+        email: "test@example.com",
+        role: Role.User,
+      });
     } catch (err: any) {
       setError(err.response?.data?.message || "Something went wrong");
       setUser(null); // Not authenticated

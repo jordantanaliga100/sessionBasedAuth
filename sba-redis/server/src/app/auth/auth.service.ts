@@ -144,6 +144,7 @@ class Auth {
         await EmailService.sendResetPasswordEmail(email, resetToken)
         return { message: 'If an account exists, a password reset link was sent to your email.' }
     }
+
     public async resetPassword(token: string, newPassword: string) {
         // 1. I-check sa Redis kung valid at hindi pa expired ang token
         const email = await redisClient.get(`reset:${token}`)
