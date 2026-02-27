@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router";
 import { Button } from "../components/ui/button";
 import {
@@ -13,24 +14,48 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 
 export default function SignUp() {
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Registering user...", formData);
+    alert("Check console for form data! Simulation lang muna.");
+  };
+
   return (
     <Card className="w-full ">
       <CardHeader>
-        <CardTitle className="text-xl"> Create your account</CardTitle>
+        <CardTitle className="text-xl">Create your account</CardTitle>
         <CardDescription className="font-thin">
-          Enter your email below to login to your account
+          Enter your details below to register your account
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form>
+        {/* ✨ Added ID to form */}
+        <form id="signup-form" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-6">
             <div className="grid gap-2">
-              <Label htmlFor="email">Username</Label>
+              {/* ✨ Fixed htmlFor */}
+              <Label htmlFor="username">Username</Label>
               <Input
                 id="username"
-                type="username"
+                type="text"
                 placeholder="user123"
                 required
+                value={formData.username}
+                onChange={handleChange}
               />
             </div>
             <div className="grid gap-2">
@@ -40,6 +65,8 @@ export default function SignUp() {
                 type="email"
                 placeholder="m@example.com"
                 required
+                value={formData.email}
+                onChange={handleChange}
               />
             </div>
             <div className="grid gap-2">
@@ -51,22 +78,26 @@ export default function SignUp() {
                 type="password"
                 required
                 placeholder="********"
+                value={formData.password}
+                onChange={handleChange}
               />
             </div>
           </div>
         </form>
       </CardContent>
-      <CardFooter className="flex-col gap-2">
-        <Button type="submit" className="w-full">
-          Login
+      {/* ✨ Moved Buttons inside Footer for layout consistency */}
+      <CardFooter className="flex flex-col gap-2">
+        {/* ✨ Added form attribute to button */}
+        <Button type="submit" form="signup-form" className="w-full">
+          Register
         </Button>
         <Button variant="outline" className="w-full">
-          Login with Google
+          Signup with Google
         </Button>
       </CardFooter>
       <CardAction className="flex m-auto w-auto gap-0.5 items-center">
         <CardContent className="text-muted-foreground text-sm">
-          Already have an account ?
+          Already have an account?
         </CardContent>
         <Link to="/a">
           <Button variant="link">Sign In</Button>

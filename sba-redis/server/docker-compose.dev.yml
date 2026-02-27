@@ -2,7 +2,7 @@ name: sba-backend
 services:
     # PROXY
     nginx:
-        container_name: proxy
+        container_name: nginx
         image: nginx:alpine
         ports:
             - '80:80'

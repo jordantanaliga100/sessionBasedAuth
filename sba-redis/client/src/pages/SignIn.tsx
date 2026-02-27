@@ -1,4 +1,7 @@
-import { Link } from "react-router";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// pages/SignIn.tsx
+import { useState } from "react";
+import { Link, useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
 import {
   Card,
@@ -11,8 +14,43 @@ import {
 } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+import { useAuth } from "../hooks/useAuth";
 
 export default function SignIn() {
+  const { login } = useAuth(); // 💡 Kunin ang login function
+  const navigate = useNavigate();
+  // ✨ State management para sa form
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      await login(formData); // 💡 Tawagin ang login function sa context
+      navigate("/"); // 💡 Redirect sa dashboard pag success
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -22,7 +60,8 @@ export default function SignIn() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form>
+        {/* ✨ Dito gagamitin ang handleSubmit at ID */}
+        <form id="signin-form" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-6">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
@@ -31,6 +70,8 @@ export default function SignIn() {
                 type="email"
                 placeholder="m@example.com"
                 required
+                value={formData.email}
+                onChange={handleChange}
               />
             </div>
             <div className="grid gap-2">
@@ -48,14 +89,18 @@ export default function SignIn() {
                 type="password"
                 required
                 placeholder="********"
+                value={formData.password}
+                onChange={handleChange}
               />
             </div>
           </div>
         </form>
+        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
       </CardContent>
       <CardFooter className="flex-col gap-2">
-        <Button type="submit" className="w-full">
-          Login
+        {/* ✨ Added form attribute */}
+        <Button type="submit" form="signin-form" className="w-full">
+          {loading ? "Logging in..." : "Login"}
         </Button>
         <Button variant="outline" className="w-full">
           Login with Google
@@ -63,7 +108,7 @@ export default function SignIn() {
       </CardFooter>
       <CardAction className="flex m-auto w-auto gap-0.5 items-center">
         <CardContent className="text-muted-foreground text-sm">
-          Dont have an account ?
+          Don't have an account?
         </CardContent>
         <Link to="r">
           <Button variant="link">Sign Up</Button>

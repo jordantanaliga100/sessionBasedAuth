@@ -1,6 +1,5 @@
 // pages/Dashboard.tsx
 import { useNavigate } from "react-router";
-import api from "../api/axios"; // Import ng axios instance mo
 import { useAuth } from "../hooks/useAuth";
 
 const Dashboard = () => {
@@ -10,13 +9,8 @@ const Dashboard = () => {
 
   const handleLogout = async () => {
     try {
-      // ✨ 1. Tawagin ang logout endpoint sa backend para burahin ang session sa Redis
-      console.log("hit");
-
-      await api.post("/auth/logout");
-
       // ✨ 2. I-clear ang user state sa frontend
-      logout();
+      await logout();
 
       // ✨ 3. I-redirect sa login page
       navigate("/a");

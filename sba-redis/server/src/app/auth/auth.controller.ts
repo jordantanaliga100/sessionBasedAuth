@@ -113,13 +113,14 @@ class AuthController {
     logout = async (req: Request, res: Response): Promise<void> => {
         try {
             // 1. Burahin ang session sa Redis
+
             req.session.destroy((err) => {
                 if (err) {
                     return res.status(500).json({ success: false, message: 'Failed to logout' })
                 }
 
                 // Dapat match ang pangalan sa 'name' ng session config mo (default: connect.sid)
-                res.clearCookie('connect.sid')
+                res.clearCookie('session_id')
 
                 res.status(200).json({
                     success: true,
