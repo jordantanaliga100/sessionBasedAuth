@@ -8,9 +8,10 @@ class AuthController {
     register = async (req: Request, res: Response): Promise<void> => {
         try {
             const newUser = await this.authService.register(req.body)
+            console.log('new user registered', newUser)
 
             res.status(201).json({
-                message: 'User created! Please login to continue.',
+                message: 'User created! Please verify your email before logging in...',
                 success: true,
                 data: newUser,
             })
@@ -23,7 +24,9 @@ class AuthController {
         try {
             const user = await this.authService.login(req.body)
             // 1. Tawagin agad ang regenerate para malinis ang lumang session ID
+            console.log('ID before login:', req.sessionID)
             req.session.regenerate((err) => {
+                console.log('ID after regenerate:', req.sessionID)
                 if (err) {
                     return res.status(500).json({ success: false, message: 'Session regen failed' })
                 }

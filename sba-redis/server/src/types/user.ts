@@ -10,4 +10,5 @@ export interface User {
     email: string
     password: string
     role: UserRole // Protektado na tayo dito
+    isVerified: boolean
 }
