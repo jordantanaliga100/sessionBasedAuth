@@ -130,6 +130,25 @@ class AuthController {
             res.status(500).json({ success: false, message: 'Server error during logout' })
         }
     }
+
+    sendPasswordReset = async (req: Request, res: Response) => {
+        const { email } = req.body
+
+        // Ipapasa natin ang request sa service
+        const result = await this.authService.sendPasswordResetEmail(email)
+
+        // Kahit valid o invalid ang email, laging 200 ang balik para sa security
+        return res.status(200).json(result)
+    }
+
+    resetPassword = async (req: Request, res: Response) => {
+        const { token, newPassword } = req.body
+
+        // Ipapasa natin ang token at bagong password sa service
+        const result = await this.authService.resetPassword(token, newPassword)
+
+        return res.status(200).json(result)
+    }
 }
 
 export const AUTH = new AuthController()
