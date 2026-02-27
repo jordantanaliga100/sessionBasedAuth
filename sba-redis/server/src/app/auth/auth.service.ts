@@ -18,22 +18,11 @@ class Auth {
         INSERT INTO users (username, email, password, role)
         -- Dapat apat din ang placeholders ($1, $2, $3, $4)
         VALUES ($1, $2, $3, $4) 
-        RETURNING id, username, email, role, created_at;
+        RETURNING id, username, email, role, is_verified, created_at;
     `
         try {
             const { rows } = await pool.query(sql, values)
             const newUser = rows[0]
-
-            // --- OTP LOGIC START ---
-            // 1. Generate 6-digit OTP
-            const otp = Math.floor(100000 + Math.random() * 900000).toString()
-
-            // 2. Save sa Redis (Key: otp:email, Expire: 5 mins)
-            await redisClient.set(`otp:${email}`, otp, { EX: 1800 })
-
-            // 3. Send Email via Gmail (async, don't forget to await)
-            await EmailService.sendOTP(email, otp)
-            // --- OTP LOGIC END ---
 
             return newUser
         } catch (error: any) {
@@ -43,7 +32,8 @@ class Auth {
             throw error
         }
     }
-    public async login(data: { email: string; password: string }) {
+
+    public async login(data: { email: string; password: string }): Promise<Omit<User, 'password'>> {
         const { email, password } = data
 
         const sql = `SELECT id, username, email, password, role, is_verified FROM users WHERE email = $1`
@@ -56,14 +46,9 @@ class Auth {
                 throw new ErrorClass.NotFound('User does not exist')
             }
 
-            const user = rows[0]
+            const user = rows[0] as User
 
             console.log('newly created user', user)
-
-            // CHECK: Kung hindi pa verified, huwag hayaang mag-login
-            if (!user.is_verified) {
-                throw new ErrorClass.BadRequest('Please verify your email first before logging in.')
-            }
 
             const isMatch = await comparePassword(password, user.password)
             if (!isMatch) {
@@ -75,13 +60,68 @@ class Auth {
                 username: user.username,
                 email: user.email,
                 role: user.role,
+                is_verified: user.is_verified,
             }
         } catch (error: any) {
             throw new Error(error.message || 'Login failed')
         }
     }
+
     public async forgotPassword() {
         return null
+    }
+
+    public async sendVerificationEmail(email: string) {
+        // 1. Check muna kung verified na (para hindi spam)
+        const userCheck = await pool.query('SELECT is_verified FROM users WHERE email = $1', [
+            email,
+        ])
+
+        if (userCheck.rows[0]?.is_verified) {
+            throw new ErrorClass.BadRequest('Email is already verified.')
+        }
+        // 2. Generate OTP (600 seconds/10 mins)
+        const otp = Math.floor(100000 + Math.random() * 900000).toString()
+
+        // 3. Save to Redis
+        await redisClient.set(`otp:${email}`, otp, { EX: 600 })
+
+        // 4. Send the Email
+        await EmailService.sendOTP(email, otp, 10)
+
+        return { message: 'Verification code sent to your email!' }
+    }
+
+    public async verifyEmail(email: string, otp: string) {
+        // 1. Hanapin ang OTP sa Redis
+        const storedOtp = await redisClient.get(`otp:${email}`)
+
+        // 2. Error kung expired na (wala na sa Redis) o maling email
+        if (!storedOtp) {
+            throw new ErrorClass.BadRequest(
+                'OTP has expired or is invalid. Please request a new one.'
+            )
+        }
+
+        // 3. I-compare ang input ng user sa nakasave sa Redis
+        if (storedOtp !== otp) {
+            throw new ErrorClass.BadRequest('Invalid verification code.')
+        }
+
+        // 4. Pag match: Update ang user sa Postgres
+        const query = `UPDATE users SET is_verified = true WHERE email = $1 RETURNING id, email;`
+        const result = await pool.query(query, [email])
+
+        if (result.rowCount === 0) {
+            throw new ErrorClass.NotFound('User not found.')
+        }
+
+        // 5. Burahin na ang OTP sa Redis para hindi na magamit ulit
+        await redisClient.del(`otp:${email}`)
+
+        return {
+            user: result.rows[0],
+        }
     }
 }
 export const AuthService = new Auth()

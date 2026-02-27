@@ -11,7 +11,7 @@ export class EmailService {
         },
     })
 
-    static async sendOTP(email: string, otp: string) {
+    static async sendOTP(email: string, otp: string, expiryMinutes: number) {
         try {
             await this.transporter.sendMail({
                 from: `"Dev Jordan" <${process.env.EMAIL_USER}>`,
@@ -22,8 +22,8 @@ export class EmailService {
                         <h2>Verification Code</h2>
                         <p>Your 6-digit OTP is:</p>
                         <h1 style="color: #4A90E2;">${otp}</h1>
-                        <p>This code will expire in 5 minutes.</p>
-                    </div>
+                      <p>This code will expire in <b>${expiryMinutes} minutes</b>.</p>
+                </div>
                 `,
             })
             console.log(`✅ OTP sent successfully to ${email}`)

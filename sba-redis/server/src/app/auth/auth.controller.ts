@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { AuthService } from './auth.service'
 
 class AuthController {
@@ -11,7 +11,7 @@ class AuthController {
             console.log('new user registered', newUser)
 
             res.status(201).json({
-                message: 'User created! Please verify your email before logging in...',
+                message: 'User created!',
                 success: true,
                 data: newUser,
             })
@@ -37,8 +37,8 @@ class AuthController {
                     username: user.username,
                     email: user.email,
                     role: user.role,
+                    is_verified: user.is_verified,
                 }
-
                 // 3. I-save sa Redis bago mag-respond
                 req.session.save((saveErr) => {
                     if (saveErr) {
@@ -67,6 +67,43 @@ class AuthController {
             })
         } catch (error) {
             res.status(500).json({ success: false })
+        }
+    }
+
+    requestVerification = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            // Kunin ang email mula sa session (dahil naka-login na siya)
+            const email = req.session.user?.email
+
+            if (!email) {
+                return res.status(401).json({ message: 'User session not found.' })
+            }
+
+            const result = await this.authService.sendVerificationEmail(email)
+
+            res.status(200).json({
+                success: true,
+                message: result.message,
+            })
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    verify = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const { email, otp } = req.body
+
+            // Tawagin ang service method na ginawa natin sa taas
+            const result = await this.authService.verifyEmail(email, otp)
+
+            res.status(200).json({
+                success: true,
+                message: 'Account successfully verified! You can now log in.',
+                data: result.user,
+            })
+        } catch (error) {
+            next(error)
         }
     }
 
