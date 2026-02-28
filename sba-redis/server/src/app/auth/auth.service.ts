@@ -131,9 +131,10 @@ class Auth {
             // Security Tip: Huwag sabihin na "User not found" para hindi malaman ng hacker kung aling email ang valid.
             // Sabihin lang na "If an account exists, a link was sent."
             return {
-                message: 'If an account exists, a password reset link was sent to your email.',
+                message: `If an account exists, a password reset link was sent to this email : ${email}`,
             }
         }
+
         // 2. Generate a long random token (hindi OTP)
         const resetToken = crypto.randomBytes(32).toString('hex')
         // 3. I-save sa Redis: `reset:token` -> `email` (may expiry)
@@ -142,7 +143,7 @@ class Auth {
         console.log(`[TESTING] Reset Token for ${email}: ${resetToken}`)
         // 4. Send email: `sendResetPasswordEmail(email, token)`
         await EmailService.sendResetPasswordEmail(email, resetToken)
-        return { message: 'If an account exists, a password reset link was sent to your email.' }
+        return { message: 'If an account exists, a password reset link will sent to your email.' }
     }
 
     public async resetPassword(token: string, newPassword: string) {
@@ -162,6 +163,26 @@ class Auth {
 
         // 4. I-delete ang token sa Redis (para one-time use lang)
         await redisClient.del(`reset:${token}`)
+
+        // 5. ✨ BAGONG LOGGING: Siguraduhing tumatakbo ang step na ito
+        console.log(
+            `[DEBUG] Database updated for ${email}. Attempting to send confirmation email...`
+        )
+
+        try {
+            // 6. ✨ BAGONG ERROR HANDLING: I-wrap sa try-catch ang email sending
+            await EmailService.sendPasswordChangedEmail(email)
+            console.log(`[DEBUG] Confirmation email sent successfully to ${email}`)
+        } catch (emailError) {
+            // 🔥 LOG IT: Makikita mo ito sa docker logs kung may SMTP error
+            console.error(
+                `[ERROR] Failed to send password changed confirmation email to ${email}:`,
+                emailError
+            )
+
+            // HINDI natin kailangang i-throw ang error dito
+            // para hindi makita ng user na nag-fail ang pag-send ng email.
+        }
 
         return { message: 'Password has been reset successfully.' }
     }

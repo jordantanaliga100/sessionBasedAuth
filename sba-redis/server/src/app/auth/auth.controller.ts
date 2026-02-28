@@ -164,8 +164,8 @@ class AuthController {
 
     sendPasswordReset = async (req: Request, res: Response) => {
         const { email } = req.body
-
         // Ipapasa natin ang request sa service
+
         const result = await this.authService.sendPasswordResetEmail(email)
 
         // Kahit valid o invalid ang email, laging 200 ang balik para sa security

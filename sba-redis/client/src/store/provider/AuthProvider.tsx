@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-useless-catch */
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useEffect, useState } from "react";
 import API from "../../api/axios";
@@ -100,13 +101,54 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const sendPasswordResetEmail = async (email: string) => {
+    setIsVerifying(true); // O kung ano man ang loading state mo
+    try {
+      // return "hit forgot password";
+      const response = await API.post("/auth/forgot-password", { email });
+      console.log("response from forgot pass", response);
+
+      return response.data.message;
+    } catch (error: any) {
+      throw error; // I-throw para mahuli ng catch sa UI (SignIn/ForgotPassword page)
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const resetPassword = async (token: string, newPassword: string) => {
+    setIsVerifying(true); // O gamitin mo yung isLoadin state mo
+    try {
+      // ✨ Dito tatawagin ang endpoint ng backend
+      const response = await API.post("/auth/reset-password", {
+        token,
+        newPassword,
+      });
+
+      return response.data.message;
+    } catch (error: any) {
+      // I-throw ang error para mahuli sa UI component (reset-password page)
+      throw error;
+    } finally {
+      setIsVerifying(false);
+    }
+  };
   // ✨ This function should run on refresh
   const checkAuth = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await API.get("/auth/me"); // Endpoint to get current user
-      setUser(response.data.user);
-    } catch (error) {
+      const response = await API.get("/auth/me");
+
+      // ✨ Check if the response is actually a 401 based on status
+      if (response.status === 401) {
+        console.log("User not logged in - silent 401");
+        setUser(null);
+      } else {
+        setUser(response.data.user);
+      }
+    } catch (error: any) {
+      // This will only catch 500 errors now
+      console.error("Critical Auth check failed:", error);
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -130,6 +172,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         verifyEmail,
         isVerifying,
         successMessage,
+        sendPasswordResetEmail,
+        resetPassword,
       }}
     >
       {children}
