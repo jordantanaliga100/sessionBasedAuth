@@ -16,7 +16,7 @@ router.post('/request-verification', AuthGuard, ThrottleGaurd, AUTH.requestVerif
 router.post('/verify-email', AUTH.verifyEmail)
 
 router.post('/forgot-password', AUTH.sendPasswordReset)
-router.post('/reset-password', GuestGuard, AUTH.resetPassword)
+router.post('/reset-password', AUTH.resetPassword)
 
 // Export the router
 const AuthRoutes = router

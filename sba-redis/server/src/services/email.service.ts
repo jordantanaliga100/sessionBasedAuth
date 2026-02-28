@@ -2,8 +2,6 @@ import nodemailer from 'nodemailer'
 
 export class EmailService {
     private static transporter = nodemailer.createTransport({
-        // host: 'smtp.ethereal.email',
-        // port: 587,
         service: 'gmail',
         auth: {
             user: process.env.EMAIL_USER,
@@ -20,7 +18,7 @@ export class EmailService {
                 html: `
                <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background-color: #f9f9f9; border-radius: 8px;">
                <div style="background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 4px; border: 1px solid #ffeeba; text-align: center; font-size: 14px; margin-bottom: 15px; font-weight: bold;">
-        ⚠️ This is for testing purposes, lab. Don't worry! 😇
+        ⚠️ This is for testing purposes only! 
     </div>
     <div style="background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
         
@@ -63,7 +61,7 @@ export class EmailService {
                 html: `
                   <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background-color: #f4f7f6; border-radius: 8px;">
                   <div style="background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 4px; border: 1px solid #ffeeba; text-align: center; font-size: 14px; margin-bottom: 15px; font-weight: bold;">
-        ⚠️ This is for testing purposes, lab. Don't worry! 😇
+        ⚠️ This is for testing purposes only!
     </div>
     <div style="background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center;">
         
@@ -93,35 +91,101 @@ export class EmailService {
             console.log(`✅ Verification email sent to ${email}`)
         } catch (error) {
             console.error('❌ Verified Email error:', error)
-            // No need to throw error here, hindi dapat maapektuhan ang user flow
-            // kung nagka-issue lang sa confirmation email
         }
     }
 
     static async sendResetPasswordEmail(email: string, token: string) {
-        // 1. Dito natin ilalagay ang URL ng frontend na may kasamang token
-        // Halimbawa: https://yourfrontend.com/reset-password?token=...
         const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`
 
-        // 2. I-setup ang HTML content ng email
-        const subject = 'Password Reset Request'
-        const html = `
-            <p>You requested a password reset.</p>
-            <p>Click <a href="${resetUrl}">here</a> to reset your password. This link will expire in 15 minutes.</p>
-            <p>If you did not request this, please ignore this email.</p>
-        `
+        try {
+            await this.transporter.sendMail({
+                from: `"Dev Jordan" <${process.env.EMAIL_USER}>`,
+                to: email,
+                subject: '🔒 Reset Your Password',
+                html: `
+                <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background-color: #f4f7f6; border-radius: 8px;">
+                    
+                    <div style="background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 4px; border: 1px solid #ffeeba; text-align: center; font-size: 14px; margin-bottom: 15px; font-weight: bold;">
+                        ⚠️ Testing Purposes Only 😇
+                    </div>
 
-        // 3. Tawagin ang iyong email transporter (halimbawa, nodemailer)
-        // 3. I-send ang email
-        await this.transporter.sendMail({
-            from: `"Dev Jordan" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject,
-            html,
-        })
-        // await transporter.sendMail({ from: ..., to: email, subject, html });
-        console.log(`Sending reset email to ${email} with token: ${token}`) // Temporary log
+                    <div style="background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center;">
+                        
+                        <div style="margin-bottom: 20px;">
+                            <span style="font-size: 50px;">🔑</span> 
+                        </div>
+                        
+                        <h2 style="color: #333333; margin-top: 0; font-size: 28px; font-weight: bold;">Reset Password</h2>
+                        
+                        <p style="color: #555555; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">
+                            Hi there! You requested to reset your password. 
+                            <br>
+                            Click the button below to set a new password. This link will expire in <strong>15 minutes</strong>.
+                        </p>
+                        
+                        <a href="${resetUrl}" style="display: inline-block; padding: 15px 30px; background-color: #007bff; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            Reset Password
+                        </a>
+                        
+                        <p style="color: #777777; font-size: 14px; margin-top: 25px;">
+                            If you didn't request this, you can safely ignore this email.
+                        </p>
+                        
+                        <p style="color: #999999; font-size: 12px; margin-top: 40px; border-top: 1px solid #eeeeee; padding-top: 20px;">
+                            Thank you for choosing us! <br>
+                            &copy; 2026 YourApp. All rights reserved.
+                        </p>
+                    </div>
+                </div>
+            `,
+            })
 
-        return true
+            console.log(`✅ Reset password email sent to ${email}`)
+            return true
+        } catch (error) {
+            console.error('❌ Reset Email error:', error)
+            return false
+        }
+    }
+
+    static async sendPasswordChangedEmail(email: string) {
+        try {
+            await this.transporter.sendMail({
+                from: `"Dev Jordan" <${process.env.EMAIL_USER}>`,
+                to: email,
+                subject: '🔒 Your Password Has Been Changed',
+                html: `
+            <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background-color: #f4f7f6; border-radius: 8px;">
+            <div style="background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 4px; border: 1px solid #ffeeba; text-align: center; font-size: 14px; margin-bottom: 15px; font-weight: bold;">
+        ⚠️ Testing Purposes Only 😇
+    </div>
+    <div style="background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center;">
+        
+        <div style="margin-bottom: 20px;">
+            <span style="font-size: 50px;">🔐</span> 
+        </div>
+        
+        <h2 style="color: #007bff; margin-top: 0; font-size: 28px; font-weight: bold;">Password Changed Successfully</h2>
+        
+        <p style="color: #555555; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">
+            Hi there! This is a confirmation that your password has just been changed.
+        </p>
+        
+        <p style="color: #777777; font-size: 14px; margin-top: 25px;">
+            If you did <strong>not</strong> make this change, please contact our support team immediately.
+        </p>
+        
+        <p style="color: #999999; font-size: 12px; margin-top: 40px; border-top: 1px solid #eeeeee; padding-top: 20px;">
+            Thank you for choosing us! <br>
+            &copy; 2026 YourApp. All rights reserved.
+        </p>
+    </div>
+</div>
+            `,
+            })
+            console.log(`✅ Password changed confirmation sent to ${email}`)
+        } catch (error) {
+            console.error('❌ Error sending confirmation email:', error)
+        }
     }
 }

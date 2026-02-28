@@ -25,6 +25,8 @@ interface AuthContextType {
   requestVerification: () => void;
   verifyEmail: (otp: string) => void;
   successMessage: string | null;
+  sendPasswordResetEmail: (email: string) => Promise<string>;
+  resetPassword: (email: string, token: string) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType>(
