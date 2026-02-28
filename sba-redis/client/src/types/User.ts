@@ -12,4 +12,5 @@ export interface User {
   username: string;
   email: string;
   role: RoleType; // Gamitin ang bagong RoleType dito
+  is_verified?: boolean;
 }

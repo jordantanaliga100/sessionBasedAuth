@@ -5,15 +5,44 @@ import { AuthService } from './auth.service'
 
 class AuthController {
     private authService = AuthService
+    // auth.controller.ts
+
     register = async (req: Request, res: Response): Promise<void> => {
         try {
+            // 1. Register user in DB
             const newUser = await this.authService.register(req.body)
             console.log('new user registered', newUser)
 
-            res.status(201).json({
-                message: 'User created!',
-                success: true,
-                data: newUser,
+            // 2. ✨ START SESSION AUTOMATICALLY ✨
+            req.session.regenerate((err) => {
+                if (err) {
+                    return res.status(500).json({ success: false, message: 'Session setup failed' })
+                }
+
+                // 3. ✨ Set user data in session object
+                req.session.user = {
+                    id: newUser.id,
+                    username: newUser.username,
+                    email: newUser.email,
+                    role: newUser.role,
+                    is_verified: newUser.is_verified,
+                }
+
+                // 4. ✨ Save to Redis and send cookie
+                req.session.save((saveErr) => {
+                    if (saveErr) {
+                        return res
+                            .status(500)
+                            .json({ success: false, message: 'Session save failed' })
+                    }
+
+                    // 5. Success response with session cookie
+                    res.status(201).json({
+                        message: 'User created and logged in!',
+                        success: true,
+                        data: newUser,
+                    })
+                })
             })
         } catch (error: any) {
             res.status(400).json({ success: false, message: error.message })
@@ -92,10 +121,11 @@ class AuthController {
 
     verifyEmail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            const { email, otp } = req.body
+            const { otp } = req.body
+            const authenticatedEmail = req.session.user?.email as string
 
             // Tawagin ang service method na ginawa natin sa taas
-            const result = await this.authService.verifyEmail(email, otp)
+            const result = await this.authService.verifyEmail(authenticatedEmail, otp)
             if (req.session.user) {
                 req.session.user.is_verified = true // Ito ang mag-u-update sa Redis
             }
@@ -113,13 +143,14 @@ class AuthController {
     logout = async (req: Request, res: Response): Promise<void> => {
         try {
             // 1. Burahin ang session sa Redis
+
             req.session.destroy((err) => {
                 if (err) {
                     return res.status(500).json({ success: false, message: 'Failed to logout' })
                 }
 
                 // Dapat match ang pangalan sa 'name' ng session config mo (default: connect.sid)
-                res.clearCookie('connect.sid')
+                res.clearCookie('session_id')
 
                 res.status(200).json({
                     success: true,
