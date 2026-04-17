@@ -2,11 +2,11 @@ name: sba-client
 
 services:
   # Ang Gateway
-  nginx:
-    container_name: frontend
+  client-proxy:
+    container_name: client-proxy
     image: nginx:alpine
-    ports:
-      - "80:80"
+    # ports:
+    #   - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
@@ -14,12 +14,14 @@ services:
 
   # Ang Vite Dev Server
   client:
-    container_name: app
+    container_name: sba-client-app
     build:
       context: .
       dockerfile: Dockerfile.dev
     volumes:
       - .:/app # Ito ang Volume: Sync ang local files sa container
       - /app/node_modules # Huwag i-sync ang node_modules (para mabilis)
+    env_file:
+      - .env
     environment:
       - VITE_PORT=5173

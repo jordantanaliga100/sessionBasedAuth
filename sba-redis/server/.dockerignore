@@ -5,3 +5,8 @@ dist
 npm-debug.log
 docker-compose.
 
+# server/.dockerignore
+postgres-data/
+node_modules/
+npm-debug.log
+.env*
