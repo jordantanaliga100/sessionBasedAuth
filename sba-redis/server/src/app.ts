@@ -10,13 +10,13 @@ app.set('trust proxy', 1)
 TopMiddlewares.forEach((mw) => app.use(mw))
 
 // ROUTES
-app.get('/', (req: Request, res: Response) => {
+app.get('/api/v1', (req: Request, res: Response) => {
     // throw new Error("Testing gin index");
     res.send('Node_Express Server Alive 🛩️')
 })
 
 // ROUTES
-app.get('/health', (req: Request, res: Response) => {
+app.get('/api/v1/health', (req: Request, res: Response) => {
     res.status(200).json({
         status: 'UP',
         timestamp: new Date().toISOString(),
